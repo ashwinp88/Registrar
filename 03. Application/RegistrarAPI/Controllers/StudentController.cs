@@ -2,6 +2,7 @@
 using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RegistrarAPI.DTO;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -19,9 +20,38 @@ namespace RegistrarAPI.Controllers
         }
         // GET: api/<StudentController>
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetList(string? studentName, string? courseName, int? courseCount)
         {
-            return Ok(await DbContext.Students.ToListAsync());
+
+            IQueryable<Student> students = DbContext.Students;
+            if (studentName != null)
+                students = students.Where(s => s.Name == studentName);
+            if (courseName != null)
+                students = students.Include(s => s.CourseRegistrations)
+                    .ThenInclude(c => c.Course)
+                    .Where(s => s.CourseRegistrations
+                    .Any(c => c.Course.CourseName == courseName));
+            if (courseCount > 0)
+                students = students.Where(s => s.CourseRegistrations.Count == courseCount);
+
+            var results = await students.ToListAsync();
+            List<StudentDTO> studentList = new List<StudentDTO>();
+            foreach (var result in results)
+            {
+                var studentDTO = new StudentDTO() { StudentName = result.Name, Email = result.Email };
+                studentDTO.RegisteredCourses = new List<StudentCourseEnrollmentsDTO>();
+                foreach(var courseRegistration in result.CourseRegistrations)
+                {
+                    var courseEnrollment = new StudentCourseEnrollmentsDTO()
+                    {
+                        CourseName = courseRegistration.Course.CourseName,
+                        Credits = courseRegistration.Course.Credits
+                    };
+                    studentDTO.RegisteredCourses.Add(courseEnrollment);
+                }
+                studentList.Add(studentDTO);
+            }
+            return Ok(studentList);
         }
 
         // GET api/<StudentController>/5
