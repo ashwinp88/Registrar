@@ -1,5 +1,9 @@
 using DataAccessService;
+using DataAccessService.CommandHandlers;
+using Domain.Commands;
 using Microsoft.EntityFrameworkCore;
+using RegistrarAPI.DTO;
+using RegistrarAPI.QueryHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +20,12 @@ var loggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
 builder.Services.AddDbContext<RegistrarDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default"))
     .UseLoggerFactory(loggerFactory));
-        
+
+builder.Services.AddScoped<ICommandHandler<EnrollStudentCommand>, EnrollStudentCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<EditStudentInformationCommand>, EditStudentInfotmationCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<RegisterCourseCommand>, RegisterCourseCommandHandler>();
+builder.Services.AddScoped<IQueryHandler<GetStudentListQuery, List<StudentDTO>>, GetStudentsListHandler>();
+builder.Services.AddTransient<Message>();
 
 var app = builder.Build();
 
