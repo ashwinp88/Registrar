@@ -2,6 +2,7 @@ using DataAccessService;
 using DataAccessService.CommandHandlers;
 using Domain.Commands;
 using Microsoft.EntityFrameworkCore;
+using RegistrarAPI.Decorators;
 using RegistrarAPI.DTO;
 using RegistrarAPI.QueryHandlers;
 
@@ -21,7 +22,12 @@ builder.Services.AddDbContext<RegistrarDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default"))
     .UseLoggerFactory(loggerFactory));
 
-builder.Services.AddScoped<ICommandHandler<EnrollStudentCommand>, EnrollStudentCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<EnrollStudentCommand>>(provider =>
+{
+    var enrollStudentCommandHandler = new EnrollStudentCommandHandler(provider.GetRequiredService<RegistrarDbContext>());
+    return new AuditLoggingDecorator<EnrollStudentCommand>(enrollStudentCommandHandler);
+});
+
 builder.Services.AddScoped<ICommandHandler<EditStudentInformationCommand>, EditStudentInfotmationCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<RegisterCourseCommand>, RegisterCourseCommandHandler>();
 builder.Services.AddScoped<IQueryHandler<GetStudentListQuery, List<StudentDTO>>, GetStudentsListHandler>();

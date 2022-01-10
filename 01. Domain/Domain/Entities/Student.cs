@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Domain.Entities;
 
 public class Student : Entity
@@ -13,8 +9,8 @@ public class Student : Entity
 
     public Student(string name, string email)
     {
-        Name = name ?? throw new System.ArgumentNullException(nameof(name));
-        Email = email ?? throw new System.ArgumentNullException(nameof(email));
+        Name = name ?? throw new ArgumentNullException(nameof(name));
+        Email = email ?? throw new ArgumentNullException(nameof(email));
         CourseRegistrations = new List<CourseRegistration>();
         CourseUnregistrations = new List<CourseUnregistration>();
     }

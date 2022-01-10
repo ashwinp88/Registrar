@@ -22,6 +22,7 @@ public abstract class Entity
 
         return Id == other.Id;
     }
+
     public static bool operator ==(Entity a, Entity b)
     {
         if (a is null && b is null)
@@ -32,6 +33,7 @@ public abstract class Entity
 
         return a.Equals(b);
     }
+
     public static bool operator !=(Entity a, Entity b)
     {
         return !(a == b);
