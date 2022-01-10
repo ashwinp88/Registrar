@@ -22,18 +22,22 @@ namespace RegistrarAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetList(string? studentName, string? courseName, int? courseCount)
         {
+            IQueryable<Student> students = DbContext.Students
+                    .Include(s => s.CourseRegistrations)
+                    .ThenInclude(c => c.Course);
 
-            IQueryable<Student> students = DbContext.Students;
             if (studentName != null)
                 students = students.Where(s => s.Name == studentName);
+
             if (courseName != null)
-                students = students.Include(s => s.CourseRegistrations)
-                    .ThenInclude(c => c.Course)
+                students = students
                     .Where(s => s.CourseRegistrations
                     .Any(c => c.Course.CourseName == courseName));
+
             if (courseCount > 0)
                 students = students.Where(s => s.CourseRegistrations.Count == courseCount);
 
+            // Construct Result DTO
             var results = await students.ToListAsync();
             List<StudentDTO> studentList = new List<StudentDTO>();
             foreach (var result in results)
